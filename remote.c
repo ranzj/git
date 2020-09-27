@@ -2288,7 +2288,7 @@ static int remote_tracking(struct remote *remote, const char *refname,
  * list during reflog traversals in "check_and_collect_until()".
  */
 struct reflog_commit_list {
-	struct commit **items;
+	struct commit **item;
 	size_t nr, alloc;
 };
 
@@ -2296,14 +2296,14 @@ struct reflog_commit_list {
 static void append_commit(struct reflog_commit_list *list,
 			  struct commit *commit)
 {
-	ALLOC_GROW(list->items, list->nr + 1, list->alloc);
-	list->items[list->nr++] = commit;
+	ALLOC_GROW(list->item, list->nr + 1, list->alloc);
+	list->item[list->nr++] = commit;
 }
 
 /* Free and reset the list. */
 static void free_reflog_commit_list(struct reflog_commit_list *list)
 {
-	FREE_AND_NULL(list->items);
+	FREE_AND_NULL(list->item);
 	list->nr = list->alloc = 0;
 }
 
@@ -2391,14 +2391,8 @@ static int is_reachable_in_reflog(const char *local, const struct ref *remote)
 	 * Check if the remote commit is reachable from any
 	 * of the commits in the collected list, in batches.
 	 */
-	for (chunk = list.items; chunk < list.items + list.nr; chunk += size) {
-		size = list.items + list.nr - chunk;
-
-		/*
-		 * If the number of remaining entries is more than
-		 * the batch size, clamp the number of items passed
-		 * to the maximum batch size.
-		 */
+	for (chunk = list.item; chunk < list.item + list.nr; chunk += size) {
+		size = list.item + list.nr - chunk;
 		if (MERGE_BASES_BATCH_SIZE < size)
 			size = MERGE_BASES_BATCH_SIZE;
 
